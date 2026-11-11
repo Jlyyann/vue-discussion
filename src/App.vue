@@ -1,5 +1,5 @@
 <script setup>
-  import navbar from './components/navbar.vue'
+  import navbar from './components/Navbar.vue'
   import about from './components/About.vue'
   import projects from './components/Projects.vue'
   import tools from './components/Tools.vue'
