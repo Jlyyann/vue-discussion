@@ -21,6 +21,11 @@
 
 	// Function for sending our email:
 	const submitForm = async() => {
+		if (!name.value.trim() || !email.value.trim() || !message.value.trim()) {
+			notyf.error('Please complete all fields.');
+			return;
+		}
+
 		if (!recaptchaToken.value) {
 		        notyf.error('Please verify that you are not a robot.');
 		        return;
@@ -131,13 +136,13 @@
 	                    <div class="col-md-6">
 	                        <form @submit.prevent="submitForm">
 	                            <div class="mb-3">
-	                                <input v-model="name" type="text" class="form-control contact-form-control" placeholder="First Name M.I. Last Name">
+	                                <input v-model="name" type="text" class="form-control contact-form-control" placeholder="First Name M.I. Last Name" required>
 	                            </div>
 	                            <div class="mb-3">
-	                                <input v-model="email" type="email" class="form-control contact-form-control" placeholder="Email">
+	                                <input v-model="email" type="email" class="form-control contact-form-control" placeholder="Email" required>
 	                            </div>
 	                            <div class="mb-3">
-	                                <textarea v-model="message"class="form-control contact-form-control" rows="6" placeholder="Message"></textarea>
+	                                <textarea v-model="message" class="form-control contact-form-control" rows="6" placeholder="Message" required></textarea>
 	                            </div>
 	                            <div class="form-footer">
 	                                <div class="social-icons">
