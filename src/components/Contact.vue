@@ -1,5 +1,5 @@
 <script setup>
-	import {ref, onMounted, onBeforeUnmount} from "vue";
+	import {ref} from "vue";
 	import axios from "axios";
 
 	import {Notyf} from "notyf";
@@ -9,13 +9,13 @@
 
 
 	const WEB3FORMS_ACCESS_KEY = "d8e6ded9-e12d-49c0-9791-b8b52ff3ece2";
-	const SITE_KEY = "6LcCkBouAAAAAH2cClklegzChZLuJefZbG7qg81i";
 	// Initial value for the email:
 	const subject = "New message from Portfolio Contact Form";
 
 	const name = ref("");
 	const email = ref("");
 	const message = ref("");
+	const recaptchaToken = ref(false);
 
 	const isLoading = ref(false);
 
@@ -51,6 +51,7 @@
 			name.value = "";
 			email.value = "";
 			message.value = "";
+			recaptchaToken.value = false;
 		}
 
 		}catch(error){
@@ -60,62 +61,6 @@
 		}
 	}
 
-
-	const recaptchaContainer = ref(null);
-	const recaptchaWidgetId = ref(null);
-	const recaptchaToken = ref('');
-
-	// Callback called by reCAPTCHA when successful
-	function onRecaptchaSuccess(token) {
-	  recaptchaToken.value = token;
-	}
-
-	// Callback when expired
-	function onRecaptchaExpired() {
-	  recaptchaToken.value = '';
-	}
-
-	// Function to render the reCAPTCHA widget
-	function renderRecaptcha() {
-	  if (!window.grecaptcha) {
-	    console.error('reCAPTCHA not loaded');
-	    return;
-	  }
-
-	  recaptchaWidgetId.value = window.grecaptcha.render(recaptchaContainer.value, {
-	    sitekey: SITE_KEY,
-	    size: 'normal', // or 'compact'
-	    callback: onRecaptchaSuccess,
-	    'expired-callback': onRecaptchaExpired,
-	  });
-	}
-
-	// Function to reset reCAPTCHA
-	function resetRecaptcha() {
-	  if (recaptchaWidgetId.value !== null) {
-	    window.grecaptcha.reset(recaptchaWidgetId.value);
-	    recaptchaToken.value = '';
-	  }
-	}
-
-
-
-	onMounted(() => {
-	  // This code waits for the Google reCAPTCHA library to load, then renders the reCAPTCHA widget using onMounted hook.
-	  // The widget is rendered with grecaptcha.render(), which requires a sitekey.
-	  // Callback functions handle success and expiration events.
-	  // reCAPTCHA is reset upon form submission to clear the token.
-	  const interval = setInterval(() => {
-	    if (window.grecaptcha && window.grecaptcha.render) {
-	      renderRecaptcha();
-	      clearInterval(interval);
-	    }
-	  }, 100);
-
-	  onBeforeUnmount(() => {
-	    clearInterval(interval);
-	  });
-	});
 </script>
 
 <template>
@@ -148,9 +93,12 @@
 	                            </div>
 
 
-	                            <!-- recaptcha checkbox -->
+	                            <!-- checkbox-only confirmation -->
 	                            <div class="d-flex justify-content-end mt-2">
-	                                <div ref="recaptchaContainer"></div>
+	                                <label class="robot-checkbox">
+	                                    <input v-model="recaptchaToken" type="checkbox">
+	                                    <span>I'm not a robot</span>
+	                                </label>
 	                            </div>
 	                        </form>
 
