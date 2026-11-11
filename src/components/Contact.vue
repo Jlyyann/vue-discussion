@@ -79,6 +79,10 @@
     // Callback when expired
     function onRecaptchaExpired() {
         recaptchaToken.value = '';
+
+        if (recaptchaWidgetId.value !== null) {
+            window.grecaptcha.reset(recaptchaWidgetId.value);
+        }
     }
 
     // Function to render the reCAPTCHA widget
