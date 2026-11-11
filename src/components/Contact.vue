@@ -56,6 +56,7 @@
 		}catch(error){
 			notyf.error("Failed to send email!");
 		}finally{
+			resetRecaptcha();
 			isLoading.value=false;
 		}
 	}
