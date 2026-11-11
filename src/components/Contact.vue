@@ -1,5 +1,5 @@
 <script setup>
-    import {ref} from 'vue';
+    import { ref, onMounted, onBeforeUnmount } from 'vue';
     import axios from 'axios';
 
     import { Notyf } from 'notyf';
@@ -8,7 +8,7 @@
     const notyf = new Notyf();
 
     const WEB3FORMS_ACCESS_KEY = "d8e6ded9-e12d-49c0-9791-b8b52ff3ece2";
-
+    const SITE_KEY = "6LcCkBouAAAAAH2cClklegzChZLuJefZbG7qg81i";
     // Initial value for our email
     const subject = "New message from Portfolio Contact Form";
 
@@ -18,8 +18,64 @@
 
     const isLoading = ref(false);
 
+    const recaptchaContainer = ref(null);
+    const recaptchaWidgetId = ref(null);
+    const recaptchaToken = ref('');
+    let recaptchaLoadInterval;
+
+    // Callback called by reCAPTCHA when successful
+    function onRecaptchaSuccess(token) {
+        recaptchaToken.value = token;
+    }
+
+    // Callback when expired
+    function onRecaptchaExpired() {
+        recaptchaToken.value = '';
+    }
+
+    // Function to render the reCAPTCHA widget
+    function renderRecaptcha() {
+        if (!window.grecaptcha || !recaptchaContainer.value) {
+            console.error('reCAPTCHA not loaded');
+            return;
+        }
+
+        recaptchaWidgetId.value = window.grecaptcha.render(recaptchaContainer.value, {
+            sitekey: SITE_KEY,
+            size: 'normal',
+            callback: onRecaptchaSuccess,
+            'expired-callback': onRecaptchaExpired,
+        });
+    }
+
+    // Function to reset reCAPTCHA
+    function resetRecaptcha() {
+        if (recaptchaWidgetId.value !== null) {
+            window.grecaptcha.reset(recaptchaWidgetId.value);
+            recaptchaToken.value = '';
+        }
+    }
+
+    onMounted(() => {
+        recaptchaLoadInterval = setInterval(() => {
+            if (window.grecaptcha && window.grecaptcha.render) {
+                renderRecaptcha();
+                clearInterval(recaptchaLoadInterval);
+            }
+        }, 100);
+    });
+
+    onBeforeUnmount(() => {
+        clearInterval(recaptchaLoadInterval);
+    });
+
     // Function for sending our email:
     const submitForm = async () => {
+        if (!recaptchaToken.value) {
+            notyf.error("Please verify that you are not a robot.");
+            return;
+        }
+
         isLoading.value = true;
         
         try{
@@ -28,7 +84,8 @@
                 subject: subject,
                 name: name.value,
                 email: email.value,
-                message: message.value
+                message: message.value,
+                recaptcha_response: recaptchaToken.value
             },{
                 headers: {
                     'Content-Type': 'application/json',
@@ -50,6 +107,7 @@
         } catch(error){
             notyf.error("Failed to send email!");
         }finally{
+            resetRecaptcha();
             isLoading.value = false;
         }
     }
@@ -74,6 +132,9 @@
                             <div class="mb-3">
                                 <textarea v-model="message" class="form-control contact-form-control" rows="6" placeholder="Message"></textarea>
                             </div>
+                            <div class="mb-3">
+                                <div ref="recaptchaContainer"></div>
+                            </div>
                             <div class="form-footer">
                                 <div class="social-icons">
 <!--                                <a href="https://www.facebook.com/profile.php?id=100085701498879" id="facebook"><i class="fab fa-facebook"></i></a> -->
@@ -82,6 +143,10 @@
                                     <a href="https://github.com/cbabbage0991" id="github"><i class="fab fa-github"></i></a>
                                 </div>
                                 <button type="submit" class="submit-btn pl-5 pr-5" :disabled="isLoading">{{isLoading ? 'Sending...' : 'Submit'}}</button>
+                            </div>
+                            <!-- recaptcha checkbox -->
+                            <div class="d-flex justify-content-end mt-2">
+                                <div ref="recaptchaContainer"></div>
                             </div>
                         </form>
                         
