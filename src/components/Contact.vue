@@ -84,8 +84,7 @@
                 subject: subject,
                 name: name.value,
                 email: email.value,
-                message: message.value,
-                recaptcha_response: recaptchaToken.value
+                message: message.value
             },{
                 headers: {
                     'Content-Type': 'application/json',
@@ -105,7 +104,12 @@
         } 
 
         } catch(error){
-            notyf.error("Failed to send email!");
+            const errorMessage = error.response?.data?.message
+                || error.message
+                || "Failed to send email!";
+
+            console.error("Web3Forms submission failed:", error.response?.data || error);
+            notyf.error(errorMessage);
         }finally{
             resetRecaptcha();
             isLoading.value = false;
