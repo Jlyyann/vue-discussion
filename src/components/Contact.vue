@@ -1,6 +1,7 @@
 <script setup>
     import { ref, onBeforeUnmount, onMounted } from 'vue';
     import { Notyf } from 'notyf';
+    import 'notyf/notyf.min.css';
     import axios from 'axios';
 
     const notyf = new Notyf({
